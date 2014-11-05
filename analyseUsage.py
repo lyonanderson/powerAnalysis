@@ -76,14 +76,20 @@ def main(argv):
 						ORDER BY timestamp'''.format(whereClause=('', 'WHERE {0}'.format(whereClause))[len(whereClause) > 0]))
 
 	all_rows = cursor.fetchall()
-	displayOnLength =extractSecondsActiveFromResultSet(all_rows, 1)
+	if len(all_rows):
+		displayOnLength =extractSecondsActiveFromResultSet(all_rows, 1)
+	else:
+		displayOnLength = 0
 
 	cursor.execute('''SELECT  timestamp, state 
 						 FROM PLSleepWakeAgent_EventForward_PowerState {whereClause} 
 						 ORDER BY timestamp'''.format(whereClause=('', 'WHERE {0}'.format(whereClause))[len(whereClause) > 0]))
 
 	all_rows = cursor.fetchall()
-	deviceOnLength =extractSecondsActiveFromResultSet(all_rows, 0)
+	if len(all_rows):
+		deviceOnLength =extractSecondsActiveFromResultSet(all_rows, 0)
+	else:
+		deviceOnLength = 0
 
 	(startTimeInData, endTimeInData) = (all_rows[0][0], all_rows[-1][0])
 
