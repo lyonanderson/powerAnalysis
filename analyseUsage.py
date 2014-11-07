@@ -132,15 +132,16 @@ def main(argv):
 	whereClauseForEnergy = ''
 
 	if args.startDate:
-		whereClauseForEnergy += ' AND (timestamp  > {0} AND {0} < timestamp + timeInterval) '.format(args.startDate.strftime('%s'))
+		whereClauseForEnergy += ' ({0} >= timestamp AND {0} <= (timestamp + timeInterval)) '.format(args.startDate.strftime('%s'))
 
 	if args.endDate:
 		if args.startDate:
-			whereClauseForEnergy += ' OR '
-		whereClauseForEnergy += ' (timestamp  > {0} AND {0} < timestamp + timeInterval) '.format(args.endDate.strftime('%s'))
+			whereClauseForEnergy += ' OR ({0} < timestamp AND (timestamp + timeInterval) <  {1}) OR '.format(args.startDate.strftime('%s'), args.endDate.strftime('%s'))
+		whereClauseForEnergy += ' ({0} >= timestamp AND {0} <= (timestamp + timeInterval)) '.format(args.endDate.strftime('%s'))
 
+	if len(whereClauseForEnergy):
+		whereClauseForEnergy = 'AND ({0})'.format(whereClauseForEnergy)
 
-	print
 
 	cursor.execute('''SELECT  BLMAppName As Bundle,
 					 	SUM(Airdrop) AS Airdrop, 
@@ -180,7 +181,7 @@ def main(argv):
 						SUM(BLMEnergy_BackgroundLocation)  BLMEnergy_BackgroundLocation, 
 						SUM(background) AS  background
 						FROM PLBLMAccountingService_Aggregate_BLMAppEnergyBreakdown
-						WHERE timeInterval = '3600' 
+						WHERE timeInterval == 3600 
 						{whereClauseForEnergy}
 						GROUP BY Bundle
 						ORDER BY BLMEnergy DESC'''.format(whereClauseForEnergy=('', '{0}'.format(whereClauseForEnergy))[len(whereClauseForEnergy) > 0]))
